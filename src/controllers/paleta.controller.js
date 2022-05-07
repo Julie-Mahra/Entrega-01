@@ -1,40 +1,46 @@
-/*Controladores de busca (todas as paletas/por Id), que dá acesso ao Service  */
 const paletasService = require('../services/paletas.service');
 
-/*Busca lista completa de paletas disponíveis (retornando objetos em json) */
-const findAllPaletasController = (req, res) => {
-  const paletas = paletasService.findAllPaletasService();
-  res.send(paletas);
-};
-/*Busca paletas pelo id de acordo com a pesquisa por parâmetro (retornando objetos em json)*/
-const findByIdPaletaController = (req, res) => {
-  const parametroId = Number(req.params.id);
-  const escolhaPaleta = paletasService.findByIdPaletaService(parametroId);
-  res.send(escolhaPaleta);
-};
-/*criação de um novo item*/
-const createPaletaController = (req, res) => {
-  const paleta = req.body;
-  const newPaleta = paletasService.createPaletaService(paleta);
-  res.send(newPaleta);
+const findAllPaletasController = async (req, res) => {
+  const allPaletas = await paletasService.findAllPaletasService();
+  if (allPaletas.length == 0) {
+    return res
+      .status(404)
+      .send({ message: 'Não existe nenhuma paleta cadastrada!' });
+  }
+  res.send(allPaletas);
 };
 
-/*atualização dos itens, uma a um*/
-const updatePaletaController = (req, res) => {
-  const idParam = Number(req.params.id);
-  const paletaEdit = req.body;
-  const updatedPaleta = paletasService.updatePaletaService(idParam, paletaEdit);
+const findByIdPaletaController = async (req, res) => {
+  const idParam = req.params.id;
+  const chosenPaleta = await paletasService.findByIdPaletaService(idParam);
+  if (!chosenPaleta) {
+    return res.status(404).send({ message: 'Paleta não encontrada!' });
+  }
+  res.send(chosenPaleta);
+};
+
+const createPaletaController = async (req, res) => {
+  const paleta = req.body;
+  const newPaleta = await paletasService.createPaletaService(paleta);
+  res.status(201).send(newPaleta);
+};
+
+const updatePaletaController = async (req, res) => {
+  const idParam = req.params.id;
+  const editPaleta = req.body;
+  const updatedPaleta = await paletasService.updatePaletaService(
+    idParam,
+    editPaleta,
+  );
   res.send(updatedPaleta);
 };
 
-/*exclusão de itens um a um (respostas em chave"key{}"/retorna msg em formato json)*/
-const deletePaletaController = (req, res) => {
+const deletePaletaController = async (req, res) => {
   const idParam = req.params.id;
-  paletasService.deletePaletaService(idParam);
+  await paletasService.deletePaletaService(idParam);
   res.send({ message: 'Paleta deletada com sucesso!' });
 };
 
-/* Módulo que disponibiliza as rotas para o arquivo Index.js*/
 module.exports = {
   findAllPaletasController,
   findByIdPaletaController,
